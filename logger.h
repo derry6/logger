@@ -5,7 +5,7 @@
  * Author       : derry
  * Email        : derry0316@gmail.com
  * Created Time : 2013-12-27  22:02:52
- * Last Modified: 2013-12-27  22:25:14
+ * Last Modified: 2013-12-28  00:00:35
  * Description  : 
  * History      : 
  *        2013-12-27 22:02:52 -- Created.
@@ -26,41 +26,35 @@ enum LOG_LEVEL {
     LOG_LEVEL_NONE
 };
 
-typedef void (*logger_callback_func_t) ( const char *message);
 class logger {
 public:
     static logger * get_instance();
-    static void destroy();
-    std::string get_logger_path();
+    
+    void init (const std::string &path, const std::string &prefix, LOG_LEVEL level);
+    void destroy();
+    
     void set_filename( const std::string &filename);
-    void set_callback(logger_callback_func_t callback);
     void set_show_level(LOG_LEVEL show_level);
-    void set_socket_server(const std::string &server, unsigned short port);
     void set_console_show(bool show);
-    void set_file_show(bool show);
-    void set_socket_show(bool show);
-    void set_callback_show(bool show);
+    void set_file_save(bool save);
 
     void log(LOG_LEVEL level, const char *format, ...);
     void log(LOG_LEVEL level, const std::string &message);
 
 protected:
-    logger();
+    logger(LOG_LEVEL level, const std::string &path, const std::string &prefix);
     ~logger();
-    static logger* m_logger_instance;
-    static logger_mutex  m_logger_mutex;
+    static logger*          m_logger_instance;
+    static logger_mutex     m_logger_mutex;
 private:
-    std::string             m_filename;
-    std::ofstream           m_file_stream;
-    logger_callback_func_t  m_callback_fun;
-    std::string             m_server_address;
-    unsigned short          m_server_port;
-    int                     m_server_socket;
+    std::string             m_path;
+    std::string             m_prefix;
+    std::fstream            m_file;
     LOG_LEVEL               m_show_level;
     bool                    m_console_show;
     bool                    m_file_save;
-    bool                    m_socket_send;
-    bool                    m_callback;
+private:
+ //   bool create_dir (const std::string &path);
 };
 
 
