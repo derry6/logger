@@ -31,7 +31,7 @@ enum LOG_LEVEL {
 class logger {
 public:
     static logger * get_instance();
-    
+    static logger & get_logger();
     void init (LOG_LEVEL miniLevel, const std::string &path, const std::string &prefix);
     void destroy();
     

@@ -100,6 +100,14 @@ logger *logger::get_instance() {
     return m_logger_instance;
 }
 
+logger& logger::get_logger (){
+    logger_scoped_lock lock (&m_logger_mutex);
+    if (m_logger_instance == NULL) {
+        m_logger_instance = new logger();
+    }
+    return *m_logger_instance;
+}
+
 void logger::destroy () {
     logger_scoped_lock lock( &m_logger_mutex );
     if ( m_logger_instance != NULL ) {
