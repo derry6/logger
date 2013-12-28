@@ -18,13 +18,14 @@
 #include <fstream>
 
 enum LOG_LEVEL {
-    LOG_LEVEL_TATAL,
+    LOG_LEVEL_FATAL,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_WARNING,
     LOG_LEVEL_INFO,
     LOG_LEVEL_DEBUG,
     LOG_LEVEL_NONE
 };
+
 
 class logger {
 public:
@@ -48,13 +49,15 @@ protected:
     static logger_mutex     m_logger_mutex;
 private:
     std::string             m_path;
+    std::string             m_file_name;
     std::string             m_prefix;
-    std::fstream            m_file;
+    std::ofstream            m_file_stream;
     LOG_LEVEL               m_show_level;
     bool                    m_console_show;
     bool                    m_file_save;
 private:
  //   bool create_dir (const std::string &path);
+    void file_close();
 };
 
 

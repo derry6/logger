@@ -14,6 +14,10 @@
 #include "logger.h"
 #include "file_helper.h"
 
+static char g_level_infos[][16] = {
+    "<Fatal>", "<Error>", "<Warn>", 
+    "<Info>", "<Debug>", "<None>"
+}
 // static member
 logger* logger::m_logger_instance = NULL;
 logger_mutex logger::m_logger_mutex
@@ -68,10 +72,10 @@ static bool create_dir( const char *path) {
     return true;
 }
 
-logger::logger () : 
-    m_show_level(LOG_LEVEL_INFO),
-    m_console_show(true),
-    m_file_save(true),
+/**
+ * @brief   logger 
+ */
+logger::logger () : m_show_level(LOG_LEVEL_INFO), m_console_show(true),m_file_save(true),
 {
     
 }
@@ -96,6 +100,74 @@ void *logger::destroy () {
         m_logger_instance = NULL;
     }
 }
+
+
+void logger::set_filename(const std::string& file)
+{
+    logger_scoped_lock lock(&m_logger_mutex);
+    m_file_name = file;
+    m_file_stream.open(m_file_name.c_str(),std::ios_base::out|std::ios_base::app) 
+}
+
+void logger::set_show_level(LOG_LEVEL lvl) {
+    m_show_level = lvl;
+}
+
+void logger::set_console_show(bool show) {
+    m_console_show = show;
+}
+void logger::set_file_save(bool save) {
+    m_file_save = save;
+}
+    
+
+void logger::log(LOG_LEVEL _level, const char *format, ...) {
+    std::string message;
+    {
+        logger_scoped_lock lock(&m_logger_mutex);
+        va_list parg;
+        static char buffer[4096] = {0};
+        va_start(parg,format);
+        vsnprintf(buffer,4096-2,format,parg);
+        va_end(parg);
+        message = buffer;
+    }
+    log(level, message);
+}
+
+void logger::log(LOG_LEVEL level, std::string &message){
+    logger_scoped_lock lock(&m_logger_mutex);
+    if (level < LOG_LEVEL_FATAL || level > LOG_LEVEL_NONE ) return ;
+    std::string level_info = g_level_infos[level];
+    std::stringstream stream;
+    stream << level_info 
+        << "[" << get_current_time() << "]"
+        << " " << message.c_str() << "\n";
+    if (m_console_show) {
+        fprintf(stdout, "%s", (const char*)stream.str().c_str());
+    }
+    if (m_file_save && m_file_stream.is_open()) {
+        m_file_stream << stream.str();
+    }
+}
+
+void file_close () {
+    if (m_file_stream.is_open()) {
+        m_file_stream.flush();
+        m_file_stream.close();
+    }
+}
+
+void logger::init(LOG_LEVEL level, const std::string &path, const std::string &prefix) {
+    
+}
+
+
+
+
+
+
+
 
 
 
