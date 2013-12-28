@@ -15,6 +15,7 @@
 #ifndef   _LOGGER_H_
 #define   _LOGGER_H_
 
+#include "logger_mutex.h"
 #include <fstream>
 
 enum LOG_LEVEL {
@@ -31,7 +32,7 @@ class logger {
 public:
     static logger * get_instance();
     
-    void init (const std::string &path, const std::string &prefix, LOG_LEVEL level);
+    void init (LOG_LEVEL miniLevel, const std::string &path, const std::string &prefix);
     void destroy();
     
     void set_filename( const std::string &filename);
@@ -43,7 +44,7 @@ public:
     void log(LOG_LEVEL level, const std::string &message);
 
 protected:
-    logger(LOG_LEVEL level, const std::string &path, const std::string &prefix);
+    logger();
     ~logger();
     static logger*          m_logger_instance;
     static logger_mutex     m_logger_mutex;
