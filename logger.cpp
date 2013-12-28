@@ -19,11 +19,11 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-
+#include <iostream>
 
 static char g_level_infos[][16] = {
-    "<Fatal>", "<Error>", "<Warn>", 
-    "<Info>", "<Debug>", "<None>"
+    "<Fatal>", "<Error>", "<Warn >", 
+    "<Info >", "<Debug>", "<None >"
 };
 // static member
 logger* logger::m_logger_instance = NULL;
@@ -43,7 +43,7 @@ static std::string get_current_time() {
     struct tm  *_tm;
     char buffer[80] = {0};
     _tm = localtime(&_time);
-    strftime(buffer, sizeof buffer, "%Y-%m-%d %H:%M:%S" , _tm);
+    strftime(buffer, sizeof buffer, "%H:%M:%S" , _tm);
     return buffer;
 }
 
@@ -142,13 +142,19 @@ void logger::log(LOG_LEVEL _level, const char *format, ...) {
     log(_level, message);
 }
 
+static std::string get_thread_id() {
+    char buffer[80] = {0};
+    sprintf(buffer, "%ld", (unsigned long)pthread_self());
+    return buffer;
+}
+
 void logger::log(LOG_LEVEL level, const std::string &message){
     logger_scoped_lock lock(&m_logger_mutex);
     if (level < LOG_LEVEL_FATAL || level > LOG_LEVEL_NONE ) return ;
     if (level > m_show_level) return;
     std::string level_info = g_level_infos[level];
     std::stringstream stream;
-    stream << level_info 
+    stream << get_thread_id() << " " << level_info 
         << "[" << get_current_time() << "]"
         << " " << message.c_str() << "\n";
     if (m_console_show) {
@@ -177,17 +183,10 @@ void logger::init(LOG_LEVEL level, const std::string &path, const std::string &p
     rpath.append(prefix);
     rpath.append(get_current_date());
     rpath.append(".log");
-    m_file_name = rpath;
+    set_filename(rpath);
+    //m_file_name = rpath;
+    //std::cout << "File: " << m_file_name << std::endl;
     m_show_level = level;
 }
-
-
-
-
-
-
-
-
-
 
 
